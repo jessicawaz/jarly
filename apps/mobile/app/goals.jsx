@@ -21,7 +21,7 @@ import useUserStore from "../store/userStore";
 import BottomNav from "../components/bottomNav";
 import { useRouter } from "expo-router";
 import { del, get } from "@jarly/api-client";
-import GoalFormModal from "../components/goalForm";
+import GoalFormModal from "../components/goalFormModal";
 import { formatTargetDate } from "../lib/dates";
 import { formatCurrency } from "../lib/formatCurrency";
 import ErrorBanner from "../components/error";

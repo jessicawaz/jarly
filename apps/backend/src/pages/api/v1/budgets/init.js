@@ -58,8 +58,5 @@ export default async function handler(req, res) {
     })
     .returning();
 
-    // Create notif row
-    await db.insert(notifications).values({ userId: user.userId });
-
   return res.status(201).json({ budgetId: budget.id });
 }

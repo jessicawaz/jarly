@@ -4,14 +4,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Modal,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useState, useMemo, useEffect } from "react";
-import { patch, post } from "@jarly/api-client";
 import { colors, fonts } from "../constants/colors";
 import { formatCurrency } from "../lib/formatCurrency";
 import { DateTime } from "luxon";
@@ -45,48 +43,35 @@ const monthNames = [
 const currentYear = DateTime.now().year;
 const years = [currentYear, currentYear + 1, currentYear + 2, currentYear + 3];
 
-export default function GoalFormModal({
-  visible,
+export default function GoalForm({
+  onSave,
   onClose,
-  onSaved,
   prefilledData = {},
+  loading = false,
+  showHeader = true,
+  backgroundColor = "#FFF8F4",
+  noPadding = false,
 }) {
-  const targetMonth = prefilledData?.targetDate
-    ? DateTime.fromISO(prefilledData?.targetDate).month - 1 // 0-indexed
-    : DateTime.now().month - 1; // 0-indexed
-
-  const targetYear = prefilledData?.targetDate
-    ? DateTime.fromISO(prefilledData?.targetDate).year
-    : currentYear;
-
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [goalName, setGoalName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(DateTime.now().month - 1);
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const targetDate = `${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}`;
 
   const calc = useMemo(() => {
     const amount = Number(targetAmount);
-    if (!amount || !targetDate) {
-      return null;
-    }
+    if (!amount || !targetDate) return null;
 
     const [tYear, tMonth] = targetDate.split("-").map(Number);
-    if (!tYear || !tMonth) {
-      return null;
-    }
+    if (!tYear || !tMonth) return null;
 
     const now = new Date();
     const months =
       (tYear - now.getFullYear()) * 12 + (tMonth - (now.getMonth() + 1));
-
-    if (months <= 0) {
-      return null;
-    }
+    if (months <= 0) return null;
 
     const monthlyNeeded = Math.ceil(amount / months);
     return { monthlyNeeded, months };
@@ -126,9 +111,9 @@ export default function GoalFormModal({
       setSelectedCategory(null);
       setError(null);
     }
-  }, [prefilledData, visible]);
+  }, [prefilledData]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!goalName) {
       setError("Enter a goal name.");
       return;
@@ -137,227 +122,181 @@ export default function GoalFormModal({
       setError("Enter a target amount.");
       return;
     }
-    if (prefilledData?.id) {
-      updateGoal();
-    } else {
-      insertGoal();
-    }
+    onSave({
+      goalName,
+      targetCents: Number(targetAmount) * 100,
+      targetDate,
+      category:
+        selectedCategory !== null ? categories[selectedCategory].name : null,
+    });
   };
 
-  const insertGoal = async () => {
-    setLoading(true);
-    try {
-      await post("/api/v1/goals", {
-        name: goalName,
-        targetCents: Number(targetAmount) * 100,
-        targetDate: targetDate || null,
-        category:
-          selectedCategory !== null ? categories[selectedCategory].name : null,
-      });
-      onSaved();
-      handleClose();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isTransparent = backgroundColor === "transparent";
 
-  const updateGoal = async () => {
-    setLoading(true);
-    try {
-      await patch(`/api/v1/goals/${prefilledData.id}`, {
-        name: goalName,
-        targetCents: Number(targetAmount) * 100,
-        targetDate: targetDate || null,
-        category:
-          selectedCategory !== null ? categories[selectedCategory].name : null,
-      });
-      onSaved();
-      handleClose();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    setGoalName("");
-    setTargetAmount("");
-    setSelectedMonth(DateTime.now().month - 1);
-    setSelectedYear(currentYear);
-    setSelectedCategory(null);
-    setError(null);
-    onClose();
-  };
+  console.log("render — selectedCategory:", selectedCategory);
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleClose}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={[styles.container, { backgroundColor }]}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
+      <ScrollView
+        contentContainerStyle={[
+          noPadding
+            ? { padding: 0 }
+            : { padding: 24, paddingTop: 32, paddingBottom: 12 },
+        ]}
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header */}
+        {showHeader && (
           <View style={styles.header}>
             <Text style={styles.title}>
-              {prefilledData ? "Edit" : "New"} Goal
+              {prefilledData?.id ? "Edit" : "New"} Goal
             </Text>
-            <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Text style={styles.closeBtnText}>✕</Text>
             </TouchableOpacity>
           </View>
+        )}
 
-          {/* Category picker */}
-          <Text style={styles.inputLabel}>What kind of goal?</Text>
-          <View style={styles.categoriesWrapper}>
-            {categories.map((cat, i) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => setSelectedCategory(i)}
+        <Text style={styles.inputLabel}>What kind of goal?</Text>
+        <View style={styles.categoriesWrapper}>
+          {categories.map((cat, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => {
+                console.log(typeof i, typeof selectedCategory);
+                setSelectedCategory(i);
+              }}
+              style={[
+                styles.categoryChip,
+                selectedCategory === i && {
+                  backgroundColor: `${cat.color}25`,
+                  borderColor: cat.color,
+                },
+              ]}
+            >
+              <Text
                 style={[
-                  styles.categoryChip,
-                  selectedCategory === i && {
-                    backgroundColor: `${cat.color}25`,
-                    borderColor: cat.color,
-                  },
+                  styles.categoryText,
+                  selectedCategory === i && { color: cat.color },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    selectedCategory === i && { color: cat.color },
-                  ]}
-                >
-                  {cat.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Goal name */}
-          <Text style={styles.inputLabel}>What are you saving for?</Text>
-          <View style={styles.inputCard}>
-            <TextInput
-              style={styles.inputText}
-              placeholder="e.g. Japan trip, new laptop..."
-              placeholderTextColor={colors.textLight}
-              value={goalName}
-              onChangeText={setGoalName}
-              maxLength={60}
-            />
-          </View>
-
-          {/* Target amount */}
-          <Text style={styles.inputLabel}>Target amount</Text>
-          <View style={styles.inputCardRow}>
-            <Text style={styles.dollarSign}>$</Text>
-            <TextInput
-              style={styles.amountInput}
-              keyboardType="numeric"
-              placeholder="0"
-              placeholderTextColor={colors.textLight}
-              value={targetAmount}
-              onChangeText={setTargetAmount}
-            />
-          </View>
-
-          {/* Date pickers — full width */}
-          <Text style={styles.inputLabel}>By when?</Text>
-          <View
-            style={[
-              styles.inputCard,
-              { flexDirection: "row", padding: 0, overflow: "hidden" },
-            ]}
-          >
-            <Picker
-              selectedValue={selectedMonth}
-              onValueChange={setSelectedMonth}
-              style={{ flex: 1 }}
-              itemStyle={{ fontSize: 16, height: 150 }}
-            >
-              {monthNames.map((m, i) => (
-                <Picker.Item key={m} label={m} value={i} />
-              ))}
-            </Picker>
-            <Picker
-              selectedValue={selectedYear}
-              onValueChange={setSelectedYear}
-              style={{ flex: 1 }}
-              itemStyle={{ fontSize: 16, height: 150 }}
-            >
-              {years.map((y) => (
-                <Picker.Item key={y} label={String(y)} value={y} />
-              ))}
-            </Picker>
-          </View>
-
-          {/* Calc card */}
-          {calc ? (
-            <View style={styles.calcCard}>
-              <View>
-                <Text style={styles.calcLabel}>✨ You'd need to save</Text>
-                <View style={{ flexDirection: "row", alignItems: "baseline" }}>
-                  <Text style={styles.calcAmount}>
-                    ${formatCurrency(calc.monthlyNeeded)}
-                  </Text>
-                  <Text style={styles.calcSub}> / month</Text>
-                </View>
-              </View>
-              <View style={{ alignItems: "center" }}>
-                <Text style={styles.calcMonths}>{calc.months}</Text>
-                <Text style={styles.calcMonthsLabel}>months</Text>
-              </View>
-            </View>
-          ) : (
-            <View style={styles.placeholderCard}>
-              <Text style={styles.placeholderTitle}>
-                Monthly savings needed
+                {cat.name}
               </Text>
-              <Text style={styles.placeholderSub}>
-                Fill in amount and date to see your target
-              </Text>
-            </View>
-          )}
-
-          {error && <Text style={styles.errorMessage}>{error}</Text>}
-        </ScrollView>
-
-        {/* Save button */}
-        <View style={styles.bottomSection}>
-          <TouchableOpacity
-            style={[styles.saveButton, loading && { opacity: 0.6 }]}
-            onPress={handleSave}
-            disabled={loading}
-          >
-            <Text style={styles.saveButtonText}>
-              {loading ? "Saving..." : "Save goal →"}
-            </Text>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          ))}
         </View>
-      </KeyboardAvoidingView>
-    </Modal>
+
+        <Text style={styles.inputLabel}>What are you saving for?</Text>
+        <View style={styles.inputCard}>
+          <TextInput
+            style={styles.inputText}
+            placeholder="e.g. Japan trip, new laptop..."
+            placeholderTextColor={colors.textLight}
+            value={goalName}
+            onChangeText={setGoalName}
+            maxLength={60}
+          />
+        </View>
+
+        <Text style={styles.inputLabel}>Target amount</Text>
+        <View style={styles.inputCardRow}>
+          <Text style={styles.dollarSign}>$</Text>
+          <TextInput
+            style={styles.amountInput}
+            keyboardType="numeric"
+            placeholder="0"
+            placeholderTextColor={colors.textLight}
+            value={targetAmount}
+            onChangeText={setTargetAmount}
+          />
+        </View>
+
+        <Text style={styles.inputLabel}>By when?</Text>
+        <View
+          style={[
+            styles.inputCard,
+            { flexDirection: "row", padding: 0, overflow: "hidden" },
+          ]}
+        >
+          <Picker
+            selectedValue={selectedMonth}
+            onValueChange={setSelectedMonth}
+            style={{ flex: 1 }}
+            itemStyle={{ fontSize: 16, height: 150 }}
+          >
+            {monthNames.map((m, i) => (
+              <Picker.Item key={m} label={m} value={i} />
+            ))}
+          </Picker>
+          <Picker
+            selectedValue={selectedYear}
+            onValueChange={setSelectedYear}
+            style={{ flex: 1 }}
+            itemStyle={{ fontSize: 16, height: 150 }}
+          >
+            {years.map((y) => (
+              <Picker.Item key={y} label={String(y)} value={y} />
+            ))}
+          </Picker>
+        </View>
+
+        {calc ? (
+          <View style={styles.calcCard}>
+            <View>
+              <Text style={styles.calcLabel}>✨ You'd need to save</Text>
+              <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+                <Text style={styles.calcAmount}>
+                  ${formatCurrency(calc.monthlyNeeded)}
+                </Text>
+                <Text style={styles.calcSub}> / month</Text>
+              </View>
+            </View>
+            <View style={{ alignItems: "center" }}>
+              <Text style={styles.calcMonths}>{calc.months}</Text>
+              <Text style={styles.calcMonthsLabel}>months</Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.placeholderCard}>
+            <Text style={styles.placeholderTitle}>Monthly savings needed</Text>
+            <Text style={styles.placeholderSub}>
+              Fill in amount and date to see your target
+            </Text>
+          </View>
+        )}
+
+        {error && <Text style={styles.errorMessage}>{error}</Text>}
+      </ScrollView>
+
+      <View
+        style={[
+          styles.bottomSection,
+          {
+            backgroundColor,
+            borderTopWidth: isTransparent ? 0 : 1,
+            borderTopColor: isTransparent ? "transparent" : colors.border,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={[styles.saveButton, loading && { opacity: 0.6 }]}
+          onPress={handleSave}
+          disabled={loading}
+        >
+          <Text style={styles.saveButtonText}>
+            {loading ? "Saving..." : "Save goal →"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF8F4",
-  },
-  scrollContent: {
-    padding: 24,
-    paddingTop: 32,
-    paddingBottom: 12,
   },
   header: {
     flexDirection: "row",
@@ -517,10 +456,7 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     padding: 24,
-    paddingBottom: 36,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: "#FFF8F4",
+    paddingBottom: 24,
   },
   saveButton: {
     backgroundColor: colors.needs,

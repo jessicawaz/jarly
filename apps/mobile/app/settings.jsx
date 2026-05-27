@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useEffect, useState } from "react";
-import { get } from "@jarly/api-client";
+import { del, get } from "@jarly/api-client";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 import { colors, fonts } from "../constants/colors";
@@ -27,12 +27,13 @@ import PasswordChangeModal from "../components/settings/passwordChangeModal";
 import JarSplitModal from "../components/settings/jarSplitEditModal";
 import { signOut } from "@jarly/api-client/auth";
 import { useRouter } from "expo-router";
+import DeleteAccountModal from "../components/settings/deleteAccountModal";
 
 export default function Settings() {
   const router = useRouter();
 
   const { user, fetchUser, budget } = useUserStore();
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [monthlyRecapEnabled, setMonthlyRecapEnabled] = useState(true);
@@ -42,6 +43,7 @@ export default function Settings() {
   const [editIncomeVisible, setEditIncomeVisible] = useState(false);
   const [changePasswordVisible, setChangePasswordVisible] = useState(false);
   const [editJarSplitVisible, setEditJarSplitVisible] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -101,7 +103,7 @@ export default function Settings() {
               {/* Delete account button */}
               <TouchableOpacity
                 style={styles.deleteAccountButton}
-                onPress={() => router.push("/auth/delete")}
+                onPress={() => setShowDeleteModal(true)}
               >
                 <Text style={styles.deleteAccountText}>Delete Account</Text>
               </TouchableOpacity>
@@ -133,6 +135,11 @@ export default function Settings() {
         currentNeedsPct={budget?.needsPct}
         currentGoalsPct={budget?.goalsPct}
         currentFunPct={budget?.funPct}
+      />
+
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
       />
 
       <BottomNav currentPage={"Settings"} />

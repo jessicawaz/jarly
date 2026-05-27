@@ -34,6 +34,7 @@ export default async function handler(req, res) {
       passwordHash: pwHash,
     })
     .returning();
+  console.log('finished')
 
-  return res.status(201).json({ userId: user.id });
+  return res.status(201).json({ ok: true });
 }

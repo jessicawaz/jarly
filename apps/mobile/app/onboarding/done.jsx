@@ -70,6 +70,7 @@ export default function Goal() {
 
     setLoading(true);
     try {
+      console.log("1. signing up...");
       // Create user
       await post("/api/v1/auth/signup", {
         firstName,
@@ -78,9 +79,11 @@ export default function Goal() {
         password,
       });
 
+      console.log("2. signing in...");
       // Sign in
       await mobileSignIn(email, password);
 
+      console.log("3. init budget...");
       // Init budget
       await post("/api/v1/budgets/init", {
         income,
@@ -89,6 +92,7 @@ export default function Goal() {
         funPct,
       });
 
+      console.log("4. saving goal...");
       // Save goal
       if (goal?.goalName && goal?.targetAmount) {
         await post("/api/v1/goals", {
@@ -99,6 +103,7 @@ export default function Goal() {
         });
       }
 
+      console.log("5. navigating...");
       // Done
       router.push("/home");
     } catch (err) {

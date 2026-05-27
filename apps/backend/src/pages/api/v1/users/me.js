@@ -1,6 +1,5 @@
 // GET current user profile + jar settings
 // PATCH update income, jar split, display name
-// DELETE account & all assoc data
 import { eq, and } from "drizzle-orm";
 import { DateTime } from "luxon";
 
@@ -27,12 +26,6 @@ export default async function handler(req, res) {
       .where(and(eq(users.id, authUser.userId), eq(budgets.month, monthYear)))
       .orderBy(budgets.month)
       .limit(1);
-
-    if (!result.length) {
-      return res
-        .status(404)
-        .json({ error: { code: "NOT_FOUND", message: "User not found." } });
-    }
 
     const { users: user, budgets: budget } = result[0];
 
