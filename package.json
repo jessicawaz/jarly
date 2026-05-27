@@ -1,20 +1,21 @@
 {
   "name": "jarly",
-  "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "dev:backend": "npm run dev --workspace=apps/backend -- -p 3001",
+    "dev:mobile": "cd apps/mobile && npx expo start --clear",
+    "dev": "turbo run dev"
   },
   "devDependencies": {
-    "eslint": "^9",
-    "eslint-config-next": "16.2.6"
+    "turbo": "latest"
+  },
+  "dependencies": {
+    "luxon": "^3.7.2",
+    "metro": "^0.83.3",
+    "metro-config": "^0.84.4"
   }
 }

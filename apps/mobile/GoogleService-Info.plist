@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>826117122705-jtj2trtbenq2il461l09n5hme87bju4m.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.826117122705-jtj2trtbenq2il461l09n5hme87bju4m</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCRRrxn7frClwP74O8aMvA-tFR1i7rQNuI</string>
+	<key>GCM_SENDER_ID</key>
+	<string>826117122705</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.jarly.app</string>
+	<key>PROJECT_ID</key>
+	<string>jarly-747ff</string>
+	<key>STORAGE_BUCKET</key>
+	<string>jarly-747ff.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:826117122705:ios:65007f6431e395f60aad30</string>
+</dict>
+</plist>

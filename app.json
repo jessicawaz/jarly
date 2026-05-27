@@ -1,0 +1,24 @@
+{
+  "plugins": [
+    "expo-secure-store",
+    "expo-font"
+  ],
+  "extra": {
+    "eas": {
+      "projectId": "fcae8beb-86db-4f8c-a122-98dee8e79551"
+    }
+  },
+  "expo": {
+    "ios": {
+      "bundleIdentifier": "com.jesswaz.jarly",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fcae8beb-86db-4f8c-a122-98dee8e79551"
+      }
+    }
+  }
+}

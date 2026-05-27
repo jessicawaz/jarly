@@ -1,0 +1,57 @@
+{
+  "name": "@jarly/mobile",
+  "version": "1.0.0",
+  "main": "./router-entry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "workspaces": {
+    "nohoist": [
+      "react-native-gesture-handler",
+      "react-native-gesture-handler/**"
+    ]
+  },
+  "dependencies": {
+    "@expo-google-fonts/fredoka-one": "^0.2.3",
+    "@expo-google-fonts/nunito": "^0.4.2",
+    "@expo-google-fonts/varela-round": "^0.4.1",
+    "@expo/vector-icons": "^15.1.1",
+    "@jarly/api-client": "*",
+    "@jarly/store": "*",
+    "@radix-ui/react-compose-refs": "^1.1.2",
+    "@react-native-community/picker": "^1.8.0",
+    "@react-native-community/slider": "5.1.2",
+    "@react-native-google-signin/google-signin": "^13.0.0",
+    "@react-native-picker/picker": "^2.7.0",
+    "color": "^4.2.3",
+    "expo": "^55.0.26",
+    "expo-auth-session": "~55.0.16",
+    "expo-blur": "~55.0.14",
+    "expo-constants": "~55.0.16",
+    "expo-crypto": "~55.0.15",
+    "expo-dev-client": "~55.0.35",
+    "expo-font": "~55.0.7",
+    "expo-image": "~55.0.11",
+    "expo-linear-gradient": "~55.0.14",
+    "expo-linking": "~55.0.15",
+    "expo-notifications": "~55.0.23",
+    "expo-router": "~55.0.14",
+    "expo-secure-store": "~55.0.14",
+    "expo-status-bar": "~55.0.6",
+    "firebase": "^12.13.0",
+    "lodash": "^4.18.1",
+    "luxon": "^3.7.2",
+    "react": "19.2.0",
+    "react-native": "0.83.6",
+    "react-native-gesture-handler": "~2.30.0",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-svg": "15.15.3",
+    "react-native-vector-icons": "^10.3.0",
+    "zxcvbn": "^4.4.2"
+  },
+  "private": true
+}
