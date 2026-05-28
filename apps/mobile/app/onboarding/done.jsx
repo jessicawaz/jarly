@@ -70,40 +70,29 @@ export default function Goal() {
 
     setLoading(true);
     try {
-      console.log("1. signing up...");
-      // Create user
-      await post("/api/v1/auth/signup", {
+      // Register user: sign up, create budget, add goal (if applicable)
+      await post("/api/v1/auth/register", {
         firstName,
         lastName,
         email,
         password,
-      });
-
-      console.log("2. signing in...");
-      // Sign in
-      await mobileSignIn(email, password);
-
-      console.log("3. init budget...");
-      // Init budget
-      await post("/api/v1/budgets/init", {
         income,
         needsPct,
         goalsPct,
         funPct,
+        goal: goal?.goalName
+          ? {
+              name: goal.goalName,
+              targetCents: goal.targetCents,
+              targetDate: goal.targetDate,
+              category: goal.category,
+            }
+          : null,
       });
 
-      console.log("4. saving goal...");
-      // Save goal
-      if (goal?.goalName && goal?.targetAmount) {
-        await post("/api/v1/goals", {
-          name: goal.goalName,
-          targetCents: Number(goal.targetAmount) * 100,
-          targetDate: goal.targetDate || null,
-          category: goal.selectedCategory,
-        });
-      }
+      // Sign in
+      await mobileSignIn(email, password);
 
-      console.log("5. navigating...");
       // Done
       router.push("/home");
     } catch (err) {

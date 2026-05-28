@@ -1,7 +1,7 @@
 import { db } from "@/lib/db/client";
 import { budgets, goals, spends } from "@/lib/db/schema";
 import { getUser } from "@/lib/getUser";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, lt } from "drizzle-orm";
 import { DateTime } from "luxon";
 
 export default async function handler(req, res) {
@@ -13,8 +13,29 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "GET") {
-    // GET - list (filter:month,jar,limit,offset)
-    return res.status(200).json({ data: [] });
+    const { from, to } = req.query;
+
+    const now = DateTime.now();
+    const start = from ? new Date(from) : now.startOf("month").toJSDate();
+    const end = to
+      ? new Date(to)
+      : now.plus({ months: 1 }).startOf("month").toJSDate();
+
+    const conditions = [
+      eq(spends.userId, user.userId),
+      lt(spends.createdAt, end),
+    ];
+
+    if (from) {
+      conditions.push(gte(spends.createdAt, start));
+    }
+
+    const filteredSpends = await db
+      .select()
+      .from(spends)
+      .where(and(...conditions));
+
+    return res.status(200).json({ data: filteredSpends });
   }
 
   if (req.method === "POST") {

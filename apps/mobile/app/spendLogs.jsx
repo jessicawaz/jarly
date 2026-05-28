@@ -14,19 +14,23 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Entypo from "@expo/vector-icons/Entypo";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import _, { reduce } from "lodash";
+import { Swipeable } from "react-native-gesture-handler";
 
 import { colors, fonts } from "../constants/colors";
 import { useEffect, useState } from "react";
-import { get, post } from "@jarly/api-client";
+import { del, get, post } from "@jarly/api-client";
 import { jars } from "../lib/jars";
 import { formatCurrency } from "../lib/formatCurrency";
 import useUserStore from "../store/userStore";
 import useSpendsStore from "../store/spendsStore";
+import SpendFormModal from "../components/spendFormModal";
 
 export default function SpendLogs() {
   const router = useRouter();
   const { budget } = useUserStore();
-  const { spends } = useSpendsStore();
+  const { spends, fetchSpends } = useSpendsStore();
+
+  const [spendEditing, setSpendEditing] = useState(null);
 
   const totalSpent = _.sumBy(spends, "amountCents") / 100;
   const totalRemaining = budget?.incomeCents / 100 - totalSpent;
@@ -42,6 +46,15 @@ export default function SpendLogs() {
     );
   }
 
+  const handleDelete = async (spendId) => {
+    try {
+      await del(`/api/v1/spends/${spendId}`);
+      fetchSpends();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <View style={styles.spendLogWrapper}>
       <Text style={styles.label}>Spend Log</Text>
@@ -51,24 +64,45 @@ export default function SpendLogs() {
           const jarBelongsTo = jars.find((jar) => jar.name === spend.jar);
 
           return (
-            <View key={`spend-${i}`} style={styles.spendCard}>
-              <View style={styles.spendTypeWrapper}>
-                <View
-                  style={[
-                    styles.iconWrapper,
-                    { backgroundColor: jarBelongsTo.color },
-                  ]}
+            <Swipeable
+              key={`spend-${i}`}
+              containerStyle={styles.swipeable}
+              friction={2}
+              enableTrackpadTwoFingerGesture
+              rightThreshold={40}
+              renderRightActions={() => (
+                <TouchableOpacity
+                  style={styles.deleteAction}
+                  onPress={() => handleDelete(spend.id)}
                 >
-                  <View style={styles.icon}>{jarBelongsTo.icon}</View>
+                  <Text style={styles.deleteActionText}>Delete</Text>
+                </TouchableOpacity>
+              )}
+            >
+              <TouchableOpacity
+                style={styles.spendCard}
+                onPress={() => {
+                  setSpendEditing(spend);
+                }}
+              >
+                <View style={styles.spendTypeWrapper}>
+                  <View
+                    style={[
+                      styles.iconWrapper,
+                      { backgroundColor: jarBelongsTo.color },
+                    ]}
+                  >
+                    <View style={styles.icon}>{jarBelongsTo.icon}</View>
+                  </View>
+
+                  <Text style={styles.spendLabel}>{spend.label}</Text>
                 </View>
 
-                <Text style={styles.spendLabel}>{spend.label}</Text>
-              </View>
-
-              <Text style={styles.amountSpent}>
-                ${formatCurrency(spend.amountCents / 100)}
-              </Text>
-            </View>
+                <Text style={styles.amountSpent}>
+                  ${formatCurrency(spend.amountCents / 100)}
+                </Text>
+              </TouchableOpacity>
+            </Swipeable>
           );
         })}
       </View>
@@ -88,6 +122,16 @@ export default function SpendLogs() {
           </Text>
         </View>
       </View>
+
+      <SpendFormModal
+        visible={spendEditing !== null}
+        onClose={() => setSpendEditing(null)}
+        onSaved={() => {
+          setSpendEditing(null);
+          fetchSpends();
+        }}
+        prefilledData={spendEditing}
+      />
     </View>
   );
 }
@@ -169,5 +213,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semi,
     color: colors.textMid,
     fontSize: 14,
+  },
+    deleteAction: {
+    backgroundColor: "#E05C5C",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    borderRadius: 16,
+  },
+  deleteActionText: {
+    color: "#fff",
+    fontFamily: fonts.extra,
+    fontSize: 13,
   },
 });

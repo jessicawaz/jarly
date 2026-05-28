@@ -8,6 +8,7 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { get } from "@jarly/api-client";
@@ -23,6 +24,8 @@ import { formatCurrency } from "../lib/formatCurrency";
 import ErrorBanner from "../components/error";
 import useSpendsStore from "../store/spendsStore";
 import useGoalsStore from "../store/goalsStore";
+import _ from "lodash";
+import SpendHistoryRow from "../components/spendHistoryRow";
 
 const DONUT_SIZE = 180;
 const STROKE_WIDTH = 28;
@@ -30,9 +33,22 @@ const RADIUS = (DONUT_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export default function Month() {
-  const { fetchUser, budget, error: userError, isLoading: userLoading } = useUserStore();
-  const { spends, fetchSpends, error: spendsError, isLoading: spendsLoading } = useSpendsStore();
+  const {
+    fetchUser,
+    budget,
+    error: userError,
+    isLoading: userLoading,
+  } = useUserStore();
+  const {
+    spends,
+    fetchSpends,
+    error: spendsError,
+    isLoading: spendsLoading,
+  } = useSpendsStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState("3m");
+  const [historySpends, setHistorySpends] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const error = userError || spendsError;
   const loading = userLoading || spendsLoading;
@@ -44,6 +60,47 @@ export default function Month() {
     }
     load();
   }, []);
+
+  useEffect(() => {
+    let fromDate;
+    switch (filter) {
+      case "3m":
+        fromDate = DateTime.now().minus({ months: 3 });
+        break;
+      case "6m":
+        fromDate = DateTime.now().minus({ months: 6 });
+        break;
+      case "12m":
+        fromDate = DateTime.now().minus({ months: 12 });
+        break;
+      case "all-time":
+        fromDate = null;
+        break;
+      default:
+        fromDate = DateTime.now().minus({ months: 3 });
+        break;
+    }
+    const toDate = DateTime.now().endOf("month");
+
+    async function fetchData() {
+      setHistoryLoading(true);
+      try {
+        const url = fromDate
+          ? `/api/v1/spends?from=${fromDate.toISODate()}&to=${toDate.toISODate()}`
+          : `/api/v1/spends?to=${toDate.toISODate()}`;
+
+        const { data } = await get(url);
+
+        setHistorySpends(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setHistoryLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [filter]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -83,6 +140,11 @@ export default function Month() {
   const funSpent = funSpends.reduce((sum, s) => sum + s.amountCents, 0) / 100;
   const funLeft = funAmt - funSpent;
   const totalSpent = needsSpent + funSpent + goalsSpent;
+
+  const groupedSpends = _.groupBy(historySpends, (sp) =>
+    DateTime.fromISO(sp.createdAt).toFormat("yyyy-MM"),
+  );
+  const sortedMonths = Object.keys(groupedSpends).sort().reverse();
 
   return (
     <>
@@ -233,10 +295,48 @@ export default function Month() {
             goalsSpent={goalsSpent}
             funSpent={funSpent}
           />
+
+          <Text style={styles.spendHistoryLabel}>Spend History</Text>
+
+          {/* Filter tabs */}
+          <View style={styles.filtersWrapper}>
+            {filters.map(({ key, label }) => (
+              <TouchableOpacity
+                onPress={() => setFilter(key)}
+                style={[
+                  styles.filterButton,
+                  key === filter && { backgroundColor: colors.needs },
+                ]}
+                key={key}
+              >
+                <Text style={styles.filterLabel}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Spend history (grouped by month, each group shows spends for that month) */}
+          <View style={{ opacity: historyLoading ? 0.4 : 1 }}>
+            {sortedMonths.map((month, i) => {
+              const spendsAtMonth = groupedSpends[month];
+              return (
+                <View key={`month-${i}`}>
+                  <Text style={styles.monthText}>
+                    {DateTime.fromISO(month).toFormat("MMMM yyyy")}
+                  </Text>
+
+                  <View style={styles.spendsWrapper}>
+                    {spendsAtMonth.map((spend, j) => (
+                      <SpendHistoryRow key={`spend-${j}`} spend={spend} />
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
         </ScrollView>
       </LinearGradient>
 
-      <BottomNav currentPage={"This Month"} />
+      <BottomNav currentPage={"Recap"} />
     </>
   );
 }
@@ -395,6 +495,51 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textDark,
   },
+
+  // Filters
+  filtersWrapper: {
+    flexDirection: "row",
+    gap: 8,
+    margin: "auto",
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  filterButton: {
+    padding: 8,
+    backgroundColor: colors.needsLight,
+    borderRadius: 12,
+  },
+  filterLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: colors.textDark,
+    textTransform: "uppercase",
+    textAlign: "center",
+  },
+
+  // Spend History
+  spendHistoryLabel: {
+    marginTop: 32,
+    fontSize: 11,
+    fontWeight: "800",
+    color: colors.textMid,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    textAlign: "center",
+  },
+  monthText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: colors.textLight,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  spendsWrapper: {
+    gap: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingBottom: 16,
+  },
 });
 
 const getSummaryMessage = (needsCovered, goalsContributed, funLeft) => {
@@ -503,3 +648,10 @@ function DonutChart({ needsSpent, goalsSpent, funSpent }) {
     </View>
   );
 }
+
+const filters = [
+  { key: "3m", label: "3 Months" },
+  { key: "6m", label: "6 Months" },
+  { key: "12m", label: "12 Months" },
+  { key: "all-time", label: "All Time" },
+];

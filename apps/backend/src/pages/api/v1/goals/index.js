@@ -25,6 +25,7 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     // POST - create a new goal
     const { name, targetCents, targetDate, category } = req.body;
+    console.log(req.body)
     if (!name || !targetCents || !targetDate || !category) {
       return res.status(400).json({
         error: { code: "MISSING_FIELDS", message: "Missing goal data." },

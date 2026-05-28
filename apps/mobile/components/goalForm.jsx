@@ -133,8 +133,6 @@ export default function GoalForm({
 
   const isTransparent = backgroundColor === "transparent";
 
-  console.log("render — selectedCategory:", selectedCategory);
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}

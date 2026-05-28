@@ -18,7 +18,7 @@ export const PAGES = [
   },
   {
     route: "/month",
-    name: "This Month",
+    name: "Recap",
     order: 3,
     icon: <MaterialIcons name="calendar-month" size={24} />,
   },

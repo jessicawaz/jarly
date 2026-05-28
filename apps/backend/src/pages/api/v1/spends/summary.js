@@ -30,6 +30,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ data: currentSpends });
   }
 
-  res.setHeader("Allow", ["GET", "POST"]);
+  res.setHeader("Allow", ["GET"]);
   return res.status(405).end();
 }
