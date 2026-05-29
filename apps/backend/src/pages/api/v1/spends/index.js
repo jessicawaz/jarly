@@ -78,6 +78,8 @@ export default async function handler(req, res) {
       })
       .returning();
 
+    let goalCompleted = false;
+
     if (goalId) {
       const [currentGoal] = await db
         .select()
@@ -87,17 +89,17 @@ export default async function handler(req, res) {
 
       if (currentGoal) {
         const update = { savedCents: currentGoal.savedCents + Number(amount) };
-        if (
-          currentGoal.targetCents >=
-          currentGoal.savedCents + Number(amount)
-        ) {
-          update.completedAt = DateTime.now();
+
+        goalCompleted =
+          currentGoal.targetCents <= currentGoal.savedCents + Number(amount);
+        if (goalCompleted) {
+          update.completedAt = DateTime.now().toJSDate();
         }
         await db.update(goals).set(update).where(eq(goals.id, goalId));
       }
     }
 
-    return res.status(201).json({ ok: true });
+    return res.status(201).json({ ok: true, goalCompleted });
   }
 
   res.setHeader("Allow", ["GET", "POST"]);

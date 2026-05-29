@@ -6,7 +6,9 @@ import {
   ActivityIndicator,
   ScrollView,
   RefreshControl,
+  Animated,
 } from "react-native";
+import ConfettiCannon from "react-native-confetti-cannon";
 import { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { DateTime, Interval } from "luxon";
@@ -14,7 +16,7 @@ import Octicons from "@expo/vector-icons/Octicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { colors, fonts } from "../constants/colors";
 import useUserStore from "../store/userStore";
@@ -31,9 +33,12 @@ import { get } from "@jarly/api-client";
 import SpendLogs from "./spendLogs";
 import useSpendsStore from "../store/spendsStore";
 import ErrorBanner from "../components/error";
+import AnimatedBanner from "../components/animatedBanner";
 
 export default function Home() {
   const router = useRouter();
+  const { goalCompleted } = useLocalSearchParams({ goalCompleted: Boolean });
+
   const {
     user,
     fetchUser,
@@ -48,6 +53,7 @@ export default function Home() {
     isLoading: spendsLoading,
   } = useSpendsStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(goalCompleted === "true");
 
   const error = userError || spendsError;
   const loading = userLoading || spendsLoading;
@@ -128,6 +134,10 @@ export default function Home() {
         end={{ x: 1, y: 1 }}
         style={styles.container}
       >
+        {showConfetti && (
+          <AnimatedBanner bannerText={"Congrats! You completed a goal!"} />
+        )}
+
         <ScrollView
           contentContainerStyle={{
             padding: 32,
@@ -259,6 +269,14 @@ export default function Home() {
       </LinearGradient>
 
       <BottomNav currentPage={"home"} />
+
+      {showConfetti && (
+        <ConfettiCannon
+          count={200}
+          origin={{ x: -10, y: 0 }}
+          autoStart={true}
+        />
+      )}
     </>
   );
 }
