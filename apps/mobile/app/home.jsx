@@ -181,27 +181,39 @@ export default function Home() {
                   jar.pct = calculateNeedsSpentPct(needsSpent, needsAmt);
                   jar.spent = `$${Math.round(needsSpent)} spent of $${Math.round(needsAmt)}`;
                   jar.left = `$${formatCurrency(needsLeft)}`;
+                  jar.overBudget = needsLeft < 0;
                 }
                 if (jar.name === "Goals") {
                   jar.pct = calculateGoalsSpentPct(goalsSpent, goalsAmt);
                   jar.spent = `$${Math.round(goalsSpent)} saved of $${Math.round(goalsAmt)}`;
                   jar.left = `$${formatCurrency(goalsLeft)}`;
+                  jar.overBudget = goalsLeft < 0;
                 }
                 if (jar.name === "Fun") {
                   jar.pct = calculateFunSpentPct(funSpent, funAmt);
                   jar.spent = `$${Math.round(funSpent)} spent of $${Math.round(funAmt)}`;
                   jar.left = `$${formatCurrency(funLeft)}`;
+                  jar.overBudget = funLeft < 0;
                 }
+
                 return (
                   <View
                     key={`jar-${i}`}
-                    style={[styles.jarCard, { backgroundColor: jar.light }]}
+                    style={[
+                      styles.jarCard,
+                      { backgroundColor: jar.light },
+                      jar.overBudget && {
+                        borderWidth: 2,
+                        borderColor: "#E05C5C",
+                        borderRadius: 16,
+                      },
+                    ]}
                   >
                     <View
                       style={[
                         styles.jarProgressBg,
                         {
-                          width: `${jar.pct}%`,
+                          right: `${100 - jar.pct}%`,
                           backgroundColor: `${jar.color}20`,
                         },
                       ]}
@@ -241,7 +253,14 @@ export default function Home() {
                         >
                           {jar.left}
                         </Text>
-                        <Text style={styles.amountLeftText}>Left</Text>
+                        <Text
+                          style={[
+                            styles.amountLeftText,
+                            jar.overBudget && { color: "#E05C5C" },
+                          ]}
+                        >
+                          {jar.overBudget ? "Over" : "Left"}
+                        </Text>
                       </View>
                     </View>
                   </View>
@@ -249,12 +268,14 @@ export default function Home() {
               })}
             </View>
 
-            <View style={styles.hintCard}>
-              <Text style={styles.hintCardText}>
-                You've got ${formatCurrency(funLeft)} in your Fun Jar. Plenty of
-                room to enjoy yourself!
-              </Text>
-            </View>
+            {funLeft > 50 && (
+              <View style={styles.hintCard}>
+                <Text style={styles.hintCardText}>
+                  You've got ${formatCurrency(funLeft)} in your Fun Jar. Plenty
+                  of room to enjoy yourself!
+                </Text>
+              </View>
+            )}
           </View>
 
           <SpendLogs />
@@ -356,7 +377,6 @@ const styles = StyleSheet.create({
     elevation: 3,
     flexDirection: "row",
     justifyContent: "space-between",
-    overflow: "hidden",
     position: "relative",
   },
   jarContent: {
@@ -370,8 +390,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     bottom: 0,
-    right: 0,
-    borderRadius: 0,
+    borderRadius: 16,
   },
   iconWrapper: {
     justifyContent: "center",
@@ -395,7 +414,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: "100%",
-    borderRadius: 3,
+    borderRadius: 16,
   },
   amountLeft: {
     fontFamily: fonts.extra,
@@ -405,6 +424,8 @@ const styles = StyleSheet.create({
     textAlign: "right",
     fontFamily: fonts.black,
     color: colors.textMid,
+    textTransform: "uppercase",
+    fontSize: 11,
   },
   spentTrack: {
     marginTop: 8,
