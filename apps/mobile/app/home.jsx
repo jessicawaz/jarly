@@ -17,6 +17,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 import { colors, fonts } from "../constants/colors";
 import useUserStore from "../store/userStore";
@@ -34,10 +35,12 @@ import SpendLogs from "./spendLogs";
 import useSpendsStore from "../store/spendsStore";
 import ErrorBanner from "../components/error";
 import AnimatedBanner from "../components/animatedBanner";
+import OfflineBanner from "../components/offlineBanner";
 
 export default function Home() {
   const router = useRouter();
   const { goalCompleted } = useLocalSearchParams({ goalCompleted: Boolean });
+  const netInfo = useNetInfo();
 
   const {
     user,
@@ -134,6 +137,8 @@ export default function Home() {
         end={{ x: 1, y: 1 }}
         style={styles.container}
       >
+        {!netInfo.isConnected && <OfflineBanner />}
+
         {showConfetti && (
           <AnimatedBanner bannerText={"Congrats! You completed a goal!"} />
         )}
@@ -282,7 +287,11 @@ export default function Home() {
         </ScrollView>
 
         <TouchableOpacity
-          style={styles.floatingButton}
+          style={[
+            styles.floatingButton,
+            !netInfo.isConnected && { opacity: 0.5 },
+          ]}
+          disabled={!netInfo.isConnected}
           onPress={() => router.push("/spend")}
         >
           <AntDesign name="plus-circle" size={28} color="black" />

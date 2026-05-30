@@ -14,10 +14,7 @@ import { get, patch } from "@jarly/api-client";
 export default function NotificationsCard({
   monthlyRecapEnabled,
   setMonthlyRecapEnabled,
-  jarWarningsEnabled,
-  setJarWarningsEnabled,
-  goalMilestonesEnabled,
-  setGoalMilestonesEnabled,
+  connected,
 }) {
   useEffect(() => {
     async function getNotifs() {
@@ -26,8 +23,6 @@ export default function NotificationsCard({
         const { data } = await get("/api/v1/users/notifications");
 
         setMonthlyRecapEnabled(data?.monthlyRecap);
-        setJarWarningsEnabled(data?.jarWarnings);
-        setGoalMilestonesEnabled(data?.goalMilestones);
       } catch (err) {
         console.error(err);
       }
@@ -42,14 +37,6 @@ export default function NotificationsCard({
       let body;
 
       switch (notif) {
-        case "goal-milestone":
-          setGoalMilestonesEnabled(state);
-          body = { goalMilestones: state };
-          break;
-        case "jar-warning":
-          setJarWarningsEnabled(state);
-          body = { jarWarnings: state };
-          break;
         case "monthly-recap":
           setMonthlyRecapEnabled(state);
           body = { monthlyRecap: state };
@@ -59,12 +46,6 @@ export default function NotificationsCard({
       await patch("/api/v1/users/notifications", body);
     } catch (err) {
       switch (notif) {
-        case "goal-milestone":
-          setGoalMilestonesEnabled(!state);
-          break;
-        case "jar-warning":
-          setJarWarningsEnabled(!state);
-          break;
         case "monthly-recap":
           setMonthlyRecapEnabled(!state);
           break;
@@ -89,43 +70,10 @@ export default function NotificationsCard({
               thumbColor={"#fff"}
               ios_backgroundColor="#3e3e3e"
               onValueChange={() =>
+                connected &&
                 handleToggleNotif("monthly-recap", !monthlyRecapEnabled)
               }
               value={monthlyRecapEnabled}
-            />
-          </View>
-
-          <View style={styles.notifWrapper}>
-            <View>
-              <Text style={styles.notifLabel}>Jar Warnings</Text>
-              <Text style={styles.notifDesc}>When you're near your limit</Text>
-            </View>
-
-            <Switch
-              trackColor={{ false: "#767577", true: colors.needs }}
-              thumbColor={"#fff"}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={() =>
-                handleToggleNotif("jar-warning", !jarWarningsEnabled)
-              }
-              value={jarWarningsEnabled}
-            />
-          </View>
-
-          <View style={styles.notifWrapper}>
-            <View>
-              <Text style={styles.notifLabel}>Goal Milestones</Text>
-              <Text style={styles.notifDesc}>When you hit a saving target</Text>
-            </View>
-
-            <Switch
-              trackColor={{ false: "#767577", true: colors.needs }}
-              thumbColor={"#fff"}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={() =>
-                handleToggleNotif("goal-milestone", !goalMilestonesEnabled)
-              }
-              value={goalMilestonesEnabled}
             />
           </View>
         </View>

@@ -13,6 +13,7 @@ export default function BudgetCard({
   budget,
   setEditIncomeVisible,
   setEditJarSplitVisible,
+  connected,
 }) {
   const income = (budget?.incomeCents || 0) / 100;
   const needsAmt = (budget?.needsAmt || 0) / 100;
@@ -36,8 +37,8 @@ export default function BudgetCard({
           </View>
 
           <Text
-            onPress={() => setEditIncomeVisible(true)}
-            style={styles.actionButton}
+            onPress={() => connected && setEditIncomeVisible(true)}
+            style={[styles.actionButton, !connected && { opacity: 0.5 }]}
           >
             Edit
           </Text>
@@ -48,8 +49,8 @@ export default function BudgetCard({
             <View style={styles.jarSplitText}>
               <Text style={styles.budgetLabel}>Jar Split</Text>
               <Text
-                onPress={() => setEditJarSplitVisible(true)}
-                style={styles.actionButton}
+                onPress={() => connected && setEditJarSplitVisible(true)}
+                style={[styles.actionButton, !connected && { opacity: 0.5 }]}
               >
                 Edit
               </Text>
@@ -117,9 +118,6 @@ export default function BudgetCard({
                 );
               })}
             </View>
-
-            {/* TODO: ADJUST BUTTON */}
-            <View></View>
           </View>
         </View>
       </View>

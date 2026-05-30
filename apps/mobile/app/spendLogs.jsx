@@ -24,11 +24,13 @@ import { formatCurrency } from "../lib/formatCurrency";
 import useUserStore from "../store/userStore";
 import useSpendsStore from "../store/spendsStore";
 import SpendFormModal from "../components/spendFormModal";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 export default function SpendLogs() {
   const router = useRouter();
   const { budget } = useUserStore();
   const { spends, fetchSpends } = useSpendsStore();
+  const netInfo = useNetInfo();
 
   const [spendEditing, setSpendEditing] = useState(null);
 
@@ -72,7 +74,11 @@ export default function SpendLogs() {
               rightThreshold={40}
               renderRightActions={() => (
                 <TouchableOpacity
-                  style={styles.deleteAction}
+                  style={[
+                    styles.deleteAction,
+                    !netInfo.isConnected && { opacity: 0.5 },
+                  ]}
+                  disabled={!netInfo.isConnected}
                   onPress={() => handleDelete(spend.id)}
                 >
                   <Text style={styles.deleteActionText}>Delete</Text>
@@ -81,6 +87,7 @@ export default function SpendLogs() {
             >
               <TouchableOpacity
                 style={styles.spendCard}
+                disabled={!netInfo.isConnected}
                 onPress={() => {
                   setSpendEditing(spend);
                 }}
@@ -214,7 +221,7 @@ const styles = StyleSheet.create({
     color: colors.textMid,
     fontSize: 14,
   },
-    deleteAction: {
+  deleteAction: {
     backgroundColor: "#E05C5C",
     justifyContent: "center",
     alignItems: "center",

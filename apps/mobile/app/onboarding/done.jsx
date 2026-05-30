@@ -16,6 +16,8 @@ import { Steps } from "../../components/steps";
 import { post } from "@jarly/api-client";
 import { signIn as mobileSignIn } from "@jarly/api-client/auth";
 import useOnboardingStore from "@jarly/store";
+import OfflineBanner from "../../components/offlineBanner";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 export default function Goal() {
   const router = useRouter();
@@ -25,6 +27,7 @@ export default function Goal() {
   const goalsPct = useOnboardingStore((s) => s.goalsPct);
   const funPct = useOnboardingStore((s) => s.funPct);
   const goal = useOnboardingStore((s) => s.goal);
+  const netInfo = useNetInfo();
 
   const [firstName, setFirstName] = useState(null);
   const [lastName, setLastName] = useState(null);
@@ -109,6 +112,12 @@ export default function Goal() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
+      {!netInfo.isConnected && (
+        <OfflineBanner
+          text={"You need an internet connection to create your account."}
+        />
+      )}
+
       <View style={styles.content}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -198,7 +207,8 @@ export default function Goal() {
           {error && <Text style={styles.errorMessage}>{error}</Text>}
 
           <TouchableOpacity
-            style={styles.ctaButton}
+            style={[styles.ctaButton, !netInfo.isConnected && { opacity: 0.5 }]}
+            disabled={!netInfo.isConnected}
             onPress={handleCreateAccount}
           >
             <Text style={styles.ctaButtonText}>

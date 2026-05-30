@@ -6,6 +6,7 @@ export default function ProfileCard({
   email,
   setEditNameVisible,
   setChangePasswordVisible,
+  connected,
 }) {
   return (
     <View style={styles.card}>
@@ -18,8 +19,8 @@ export default function ProfileCard({
           </View>
 
           <Text
-            onPress={() => setEditNameVisible(true)}
-            style={styles.actionButton}
+            onPress={() => connected && setEditNameVisible(true)}
+            style={[styles.actionButton, !connected && { opacity: 0.5 }]}
           >
             Edit
           </Text>
@@ -31,8 +32,8 @@ export default function ProfileCard({
             <Text>••••••••</Text>
           </View>
           <Text
-            onPress={() => setChangePasswordVisible(true)}
-            style={styles.actionButton}
+            onPress={() => connected && setChangePasswordVisible(true)}
+            style={[styles.actionButton, !connected && { opacity: 0.5 }]}
           >
             Change
           </Text>

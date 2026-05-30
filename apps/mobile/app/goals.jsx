@@ -27,6 +27,8 @@ import { formatCurrency } from "../lib/formatCurrency";
 import ErrorBanner from "../components/error";
 import useGoalsStore from "../store/goalsStore";
 import useSpendsStore from "../store/spendsStore";
+import { useNetInfo } from "@react-native-community/netinfo";
+import OfflineBanner from "../components/offlineBanner";
 
 export default function Goals() {
   const router = useRouter();
@@ -50,6 +52,7 @@ export default function Goals() {
     error: spendsError,
     isLoading: spendsLoading,
   } = useSpendsStore();
+  const netInfo = useNetInfo();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -148,6 +151,8 @@ export default function Goals() {
         end={{ x: 1, y: 1 }}
         style={styles.container}
       >
+        {!netInfo.isConnected && <OfflineBanner />}
+
         <ScrollView
           contentContainerStyle={{
             paddingTop: 0,
@@ -210,7 +215,11 @@ export default function Goals() {
                       rightThreshold={40}
                       renderRightActions={() => (
                         <TouchableOpacity
-                          style={styles.deleteAction}
+                          style={[
+                            styles.deleteAction,
+                            !netInfo.isConnected && { opacity: 0.5 },
+                          ]}
+                          disabled={!netInfo.isConnected}
                           onPress={() => handleDelete(goal.id)}
                         >
                           <Text style={styles.deleteActionText}>Delete</Text>
@@ -219,6 +228,7 @@ export default function Goals() {
                     >
                       <TouchableOpacity
                         style={styles.goalCard}
+                        disabled={!netInfo.isConnected}
                         onPress={() => {
                           setModalVisible(true);
                           setGoalEditing(goal);
@@ -290,7 +300,11 @@ export default function Goals() {
         </ScrollView>
 
         <TouchableOpacity
-          style={styles.floatingButton}
+          style={[
+            styles.floatingButton,
+            !netInfo.isConnected && { opacity: 0.5 },
+          ]}
+          disabled={!netInfo.isConnected}
           onPress={() => {
             setGoalEditing(null);
             setModalVisible(true);

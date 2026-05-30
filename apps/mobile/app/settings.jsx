@@ -28,9 +28,12 @@ import JarSplitModal from "../components/settings/jarSplitEditModal";
 import { signOut } from "@jarly/api-client/auth";
 import { useRouter } from "expo-router";
 import DeleteAccountModal from "../components/settings/deleteAccountModal";
+import { useNetInfo } from "@react-native-community/netinfo";
+import OfflineBanner from "../components/offlineBanner";
 
 export default function Settings() {
   const router = useRouter();
+  const netInfo = useNetInfo();
 
   const { user, fetchUser, budget } = useUserStore();
 
@@ -66,6 +69,8 @@ export default function Settings() {
           end={{ x: 1, y: 1 }}
           style={styles.container}
         >
+          {!netInfo.isConnected && <OfflineBanner />}
+
           <View style={styles.content}>
             <Text style={styles.title}>Your Account</Text>
 
@@ -75,12 +80,14 @@ export default function Settings() {
                 email={user.email}
                 setEditNameVisible={setEditNameVisible}
                 setChangePasswordVisible={setChangePasswordVisible}
+                connected={netInfo.isConnected}
               />
 
               <BudgetCard
                 budget={budget}
                 setEditIncomeVisible={setEditIncomeVisible}
                 setEditJarSplitVisible={setEditJarSplitVisible}
+                connected={netInfo.isConnected}
               />
 
               <NotificationsCard
@@ -90,11 +97,16 @@ export default function Settings() {
                 setMonthlyRecapEnabled={setMonthlyRecapEnabled}
                 goalMilestonesEnabled={goalMilestonesEnabled}
                 setGoalMilestonesEnabled={setGoalMilestonesEnabled}
+                connected={netInfo.isConnected}
               />
 
               {/* Log out button */}
               <TouchableOpacity
-                style={styles.logoutButton}
+                style={[
+                  styles.logoutButton,
+                  !netInfo.isConnected && { opacity: 0.5 },
+                ]}
+                disabled={!netInfo.isConnected}
                 onPress={handleLogout}
               >
                 <Text style={styles.logoutText}>Log Out</Text>
@@ -102,7 +114,11 @@ export default function Settings() {
 
               {/* Delete account button */}
               <TouchableOpacity
-                style={styles.deleteAccountButton}
+                style={[
+                  styles.deleteAccountButton,
+                  !netInfo.isConnected && { opacity: 0.5 },
+                ]}
+                disabled={!netInfo.isConnected}
                 onPress={() => setShowDeleteModal(true)}
               >
                 <Text style={styles.deleteAccountText}>Delete Account</Text>
