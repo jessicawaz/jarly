@@ -16,7 +16,6 @@ const useUserStore = create((set) => ({
       const data = await get("/api/v1/users/me");
 
       if (!data) {
-        console.log("1243123412");
         await signOut();
         router.replace("/onboarding/welcome");
       }

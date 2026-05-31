@@ -163,7 +163,6 @@ export default function GoalForm({
             <TouchableOpacity
               key={i}
               onPress={() => {
-                console.log(typeof i, typeof selectedCategory);
                 setSelectedCategory(i);
               }}
               style={[

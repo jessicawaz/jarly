@@ -97,7 +97,7 @@ export default function Goal() {
       await mobileSignIn(email, password);
 
       // Done
-      router.push("/home");
+      router.push("/onboarding/recap");
     } catch (err) {
       setError(err.message);
     } finally {
