@@ -95,6 +95,7 @@ export default function Login() {
               maxLength={60}
               autoCapitalize="none"
               autoComplete="current-password"
+              secureTextEntry={true}
             />
           </View>
 

@@ -33,7 +33,13 @@ export async function signIn(email, password) {
 }
 
 export async function getToken() {
-  return SecureStore.getItemAsync("token");
+  let token = await SecureStore.getItemAsync("token");
+  if (!token) {
+    await new Promise(r => setTimeout(r, 100));
+    token = await SecureStore.getItemAsync("token");
+  }
+  console.log("GET TOKEN:", token ? "found" : "null");
+  return token;
 }
 
 export async function signOut() {

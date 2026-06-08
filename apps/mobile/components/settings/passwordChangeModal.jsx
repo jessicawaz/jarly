@@ -11,12 +11,16 @@ import {
 import { useState } from "react";
 import zxcvbn from "zxcvbn";
 import { BlurView } from "expo-blur";
+import AntDesign from "@expo/vector-icons/AntDesign";
+
 import { colors, fonts } from "../../constants/colors";
 
 export default function PasswordChangeModal({ visible, onClose }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordScore, setPasswordScore] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -97,18 +101,25 @@ export default function PasswordChangeModal({ visible, onClose }) {
               autoComplete="current-password"
               placeholder="••••••••"
               placeholderTextColor={colors.textLight}
+              secureTextEntry={true}
             />
 
             <Text style={styles.inputLabel}>New password</Text>
-            <TextInput
-              style={styles.input}
-              value={newPassword}
-              onChangeText={handleNewPassword}
-              secureTextEntry
-              autoComplete="new-password"
-              placeholder="••••••••"
-              placeholderTextColor={colors.textLight}
-            />
+            <View style={styles.passwordInputWrapper}>
+              <TextInput
+                style={[styles.input, { flex: 1 }]}
+                value={newPassword}
+                onChangeText={handleNewPassword}
+                autoComplete="new-password"
+                placeholder="••••••••"
+                placeholderTextColor={colors.textLight}
+                secureTextEntry={isVisible}
+              />
+
+              <TouchableOpacity onPress={() => setIsVisible((v) => !v)}>
+                <PasswordIcon isVisible={isVisible} />
+              </TouchableOpacity>
+            </View>
 
             {passwordScore !== null && (
               <View style={styles.strengthBars}>
@@ -184,6 +195,10 @@ const styles = StyleSheet.create({
     color: colors.textDark,
     marginBottom: 16,
   },
+  passwordInputWrapper: {
+    flexDirection: "row",
+    alignItems: 'center'
+  },
   strengthBars: {
     flexDirection: "row",
     gap: 6,
@@ -220,3 +235,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+const PasswordIcon = ({ isVisible }) => {
+  return isVisible ? (
+    <AntDesign name="eye-invisible" size={24} color="black" />
+  ) : (
+    <AntDesign name="eye" size={24} color="black" />
+  );
+};

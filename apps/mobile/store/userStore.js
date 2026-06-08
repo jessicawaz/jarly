@@ -22,9 +22,12 @@ const useUserStore = create((set) => ({
 
       set({ user: data.user, budget: data.budget, isLoading: false });
     } catch (e) {
-      set({ user: null, isLoading: false, error: null });
-      await signOut();
-      router.replace("/onboarding/welcome");
+      console.log('error user store', e)
+      if (e.message === "Please sign in.") {
+        await signOut();
+        router.replace("/onboarding/welcome");
+      }
+      set({ user: null, isLoading: false, error: e.message });
     }
   },
 

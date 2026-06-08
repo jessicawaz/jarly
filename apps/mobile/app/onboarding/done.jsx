@@ -179,6 +179,7 @@ export default function Goal() {
               maxLength={60}
               autoCapitalize="none"
               autoComplete="new-password"
+              secureTextEntry={true}
             />
 
             {passwordFeedback !== null && (
