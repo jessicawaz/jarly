@@ -107,20 +107,20 @@ export default function Login() {
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.dividerRow}>
+          {/* <View style={styles.dividerRow}>
             <View style={styles.dividerLine} />
             <Text style={styles.dividerText}>or</Text>
             <View style={styles.dividerLine} />
-          </View>
+          </View> */}
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.googleButton}
             onPress={handleGoogleLogin}
           >
             <Text style={styles.googleButtonText}>
               {loading?.google ? "Finding account..." : "Continue with Google"}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <Text style={styles.alreadyAccount}>
             Need an account?{" "}
